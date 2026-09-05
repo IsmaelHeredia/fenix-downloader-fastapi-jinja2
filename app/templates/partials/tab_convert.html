@@ -1,0 +1,40 @@
+<div id="panel-convert" class="fenix-tab-panel hidden space-y-5">
+  <div>
+    <label class="fenix-label">
+      <svg class="fenix-icon-sm" viewBox="0 0 24 24" style="color: var(--accent);">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+      </svg>
+      Ruta del archivo (MP4 u otro video/audio)
+    </label>
+    <input type="text" id="links-textarea-convert" name="mp4_path" class="fenix-input mt-1.5"
+      placeholder="/home/usuario/Videos/mi_video.mp4">
+    <p class="text-xs mt-1.5 fenix-muted">
+      Path absoluto del archivo en esta máquina. No se borra el original.
+    </p>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div>
+      <label class="fenix-label">
+        <svg class="fenix-icon-sm" viewBox="0 0 24 24" style="color: var(--accent);">
+          <path d="M12 20h9" />
+          <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+        </svg>
+        Nombre (opcional)
+      </label>
+      <input type="text" name="output_name" class="fenix-input mt-1.5" placeholder="Mi canción">
+    </div>
+    <div>
+      <label class="fenix-label">
+        <svg class="fenix-icon-sm" viewBox="0 0 24 24" style="color: var(--accent);">
+          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+        </svg>
+        Directorio (opcional)
+      </label>
+      <input type="text" name="output_folder" class="fenix-input mt-1.5" placeholder="carpeta/subcarpeta">
+    </div>
+  </div>
+
+  <input type="hidden" name="tipo" id="tipo-convert" value="convert">
+</div>

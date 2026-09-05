@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="animate-fadeIn">
+
+  <header class="mb-6 sm:mb-8">
+    <div class="flex items-end gap-4 sm:gap-5">
+      <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center shrink-0"
+           style="background: var(--bg-card); border: 1px solid var(--border-color);">
+        <svg class="fenix-icon-md" viewBox="0 0 24 24" style="color: var(--accent);" fill="none" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="7 10 12 15 17 10" />
+          <line x1="12" y1="15" x2="12" y2="3" />
+        </svg>
+      </div>
+      <div class="pb-0.5 min-w-0">
+        <p class="text-xs uppercase tracking-widest font-semibold" style="color: var(--accent);">
+          Descarga de Medios
+        </p>
+        <h1 class="text-xl sm:text-2xl font-bold leading-tight truncate" style="color: var(--text-primary);">
+          Fenix Downloader
+        </h1>
+        <p class="text-sm mt-0.5 font-normal" style="color: var(--text-secondary);">
+          Descargá canciones, videos y playlists de YouTube
+        </p>
+      </div>
+    </div>
+  </header>
+
+  <form id="download-form" hx-post="/download" hx-target="#console-content" hx-swap="innerHTML"
+        hx-on::after-request="window.scrollToConsole()" class="fenix-card p-4 sm:p-6 space-y-5">
+
+    <div class="fenix-tabs-container">
+      <button type="button" class="fenix-tab active" data-tab="links" onclick="switchTab('links')">
+        <svg class="fenix-icon" viewBox="0 0 24 24">
+          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+        </svg>
+        Links
+      </button>
+      <button type="button" class="fenix-tab" data-tab="search" onclick="switchTab('search')">
+        <svg class="fenix-icon" viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="7" />
+          <line x1="16.5" y1="16.5" x2="21" y2="21" />
+        </svg>
+        Buscar
+      </button>
+      <button type="button" class="fenix-tab" data-tab="playlist" onclick="switchTab('playlist')">
+        <svg class="fenix-icon" viewBox="0 0 24 24">
+          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+          <line x1="9" y1="11" x2="15" y2="11" />
+          <line x1="9" y1="15" x2="15" y2="15" />
+        </svg>
+        Playlist
+      </button>
+      <button type="button" class="fenix-tab" data-tab="export" onclick="switchTab('export')">
+        <svg class="fenix-icon" viewBox="0 0 24 24">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+          <line x1="16" y1="13" x2="8" y2="13" />
+          <line x1="16" y1="17" x2="8" y2="17" />
+        </svg>
+        Exportar
+      </button>
+      <button type="button" class="fenix-tab" data-tab="convert" onclick="switchTab('convert')">
+        <svg class="fenix-icon" viewBox="0 0 24 24">
+          <polyline points="23 4 23 10 17 10" />
+          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+        </svg>
+        Convertir
+      </button>
+    </div>
+
+    {% include "partials/tab_links.html" %}
+    {% include "partials/tab_search.html" %}
+    {% include "partials/tab_playlist.html" %}
+    {% include "partials/tab_export.html" %}
+    {% include "partials/tab_convert.html" %}
+
+    <input type="hidden" name="links" id="hidden-links" value="">
+
+    <div class="flex justify-center pt-1">
+      <button type="submit" id="download-submit-btn"
+              class="fenix-btn-primary w-full sm:w-auto sm:min-w-[260px] inline-flex items-center justify-center gap-2"
+              data-mode="start" data-label-start="Iniciar descarga">
+        <svg class="fenix-icon-sm btn-icon-start" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="7 10 12 15 17 10" />
+          <line x1="12" y1="15" x2="12" y2="3" />
+        </svg>
+        <svg class="fenix-icon-sm btn-icon-stop hidden" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+          <rect x="6" y="6" width="12" height="12" rx="1.5" />
+        </svg>
+        <span class="btn-label">Iniciar descarga</span>
+      </button>
+    </div>
+
+  </form>
+
+  <div id="console-slot" class="mt-6 sm:mt-8">
+    <div class="fenix-card p-4 sm:p-6">
+      <div class="flex items-center justify-between mb-3 gap-2 flex-wrap">
+        <div class="flex items-center gap-2">
+          <svg class="fenix-icon-sm" viewBox="0 0 24 24" style="color: var(--accent);">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+            <line x1="8" y1="21" x2="16" y2="21" />
+            <line x1="12" y1="17" x2="12" y2="21" />
+          </svg>
+          <span class="text-sm font-semibold" style="color: var(--text-secondary);">Consola de descarga</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-xs fenix-muted" id="console-empty-msg">Esperando acción...</span>
+          <button type="button" id="console-toggle-btn" onclick="toggleConsole()"
+                  class="text-xs font-medium px-3 py-1.5 rounded-lg transition"
+                  style="color: var(--accent); background: var(--tag-bg); border: 1px solid var(--tag-border);">
+            Ocultar
+          </button>
+        </div>
+      </div>
+      <div id="console-content">
+        <div id="console-placeholder" class="fenix-console-log flex items-center justify-center text-center"
+             style="min-height: 100px; color: var(--text-muted);">
+          <span class="font-normal leading-relaxed">
+            Los logs aparecerán aquí cuando inicies una descarga
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

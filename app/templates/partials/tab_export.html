@@ -1,0 +1,42 @@
+<div id="panel-export" class="fenix-tab-panel hidden space-y-5">
+  <div>
+    <label class="fenix-label">
+      <svg class="fenix-icon-sm" viewBox="0 0 24 24" style="color: var(--accent);" fill="none"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+        <line x1="16" y1="13" x2="8" y2="13" />
+        <line x1="16" y1="17" x2="8" y2="17" />
+      </svg>
+      Link de la playlist
+    </label>
+    <textarea id="links-textarea-export"
+              class="fenix-textarea mt-1.5"
+              data-role="links-source"
+              rows="3"
+              placeholder="https://youtube.com/playlist?list=PL..."></textarea>
+    <p class="text-xs mt-1.5 fenix-muted">
+      No descarga videos: genera un <code class="text-xs">.txt</code> con un link por línea.
+      Podés detener la lectura con el mismo botón si tarda.
+    </p>
+  </div>
+
+  <div>
+    <label class="fenix-label">Nombre del archivo (opcional)</label>
+    <input type="text" name="output_name" class="fenix-input mt-1.5 max-w-md"
+           placeholder="playlist" value="playlist">
+    <p class="text-xs mt-1.5 fenix-muted">Se agrega .txt automáticamente si falta.</p>
+  </div>
+
+  <div class="space-y-2.5">
+    <label class="flex items-start gap-2.5 cursor-pointer select-none">
+      <input type="checkbox" name="use_cookies" value="1" class="fenix-checkbox mt-0.5">
+      <span class="text-sm" style="color: var(--text-secondary);">
+        <span class="font-medium" style="color: var(--text-primary);">Usar cookies</span>
+        <br><span class="text-xs fenix-muted">Opcional, si la playlist pide sesión.</span>
+      </span>
+    </label>
+  </div>
+
+  <input type="hidden" name="tipo" id="tipo-export" value="export">
+</div>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Fenix Downloader{% endblock %}</title>
+  <link rel="icon" type="image/png" href="/static/img/logo.png">
+  <script>
+    (function () {
+      const saved = localStorage.getItem("theme");
+      document.documentElement.setAttribute("data-theme", saved || "dark");
+    })();
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+  <link rel="stylesheet" href="/static/css/fenix.css">
+</head>
+<body>
+  <div class="bg-pattern-layer" aria-hidden="true"></div>
+
+  <div class="content-wrapper">
+    <div class="top-actions">
+      <button class="top-action-btn" onclick="document.getElementById('help-modal').classList.remove('hidden')" title="Ayuda">
+        <svg class="fenix-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </button>
+      <button class="top-action-btn" onclick="document.getElementById('about-modal').classList.remove('hidden')" title="Acerca de">
+        <svg class="fenix-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="16" x2="12" y2="12"/>
+          <line x1="12" y1="8" x2="12.01" y2="8"/>
+        </svg>
+      </button>
+      <button class="top-action-btn" onclick="window.__toggleTheme()" title="Cambiar tema">
+        <svg id="theme-icon-sun" class="fenix-icon hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="5"/>
+          <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+        <svg id="theme-icon-moon" class="fenix-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
+    </div>
+
+    <main class="fenix-page">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  {% include "partials/modal_about.html" %}
+  {% include "partials/modal_help.html" %}
+
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

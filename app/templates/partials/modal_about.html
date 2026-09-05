@@ -1,0 +1,48 @@
+<div id="about-modal" class="modal-overlay hidden">
+  <div class="modal-content animate-modal">
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-12 h-12 rounded-xl flex items-center justify-center overflow-hidden shrink-0"
+        style="background: var(--bg-card); border: 1px solid var(--border-color);">
+        <svg class="fenix-icon-lg" viewBox="0 0 24 24" style="color: var(--accent);" fill="none" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="7 10 12 15 17 10" />
+          <line x1="12" y1="15" x2="12" y2="3" />
+        </svg>
+      </div>
+      <div>
+        <h2 class="text-xl font-bold" style="color: var(--text-primary);">FENIX DOWNLOADER</h2>
+        <p class="text-xs" style="color: var(--text-secondary);">Descarga de medios desde YouTube</p>
+      </div>
+    </div>
+
+    <div class="space-y-4">
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wider" style="color: var(--text-muted);">Versión</p>
+          <p class="text-sm mt-1" style="color: var(--text-primary);">2.0</p>
+        </div>
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wider" style="color: var(--text-muted);">Autor</p>
+          <p class="text-sm mt-1" style="color: var(--text-primary);">Ismael Heredia</p>
+        </div>
+      </div>
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-wider" style="color: var(--text-muted);">Descripción</p>
+        <p class="text-sm mt-1 leading-relaxed" style="color: var(--text-secondary);">
+          Fenix Downloader es una herramienta web que te permite descargar canciones, videos y playlists
+          completas de YouTube de forma rápida y sencilla. Incluye búsqueda por nombre, conversión local
+          a MP3, exportación de playlists a .txt, calidad seleccionable, doblaje/subtítulos en español
+          y cookies opcionales.
+        </p>
+      </div>
+    </div>
+
+    <div class="mt-6 flex justify-end">
+      <button type="button" onclick="document.getElementById('about-modal').classList.add('hidden')"
+        class="fenix-btn-primary">
+        Cerrar
+      </button>
+    </div>
+  </div>
+</div>

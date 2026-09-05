@@ -1,0 +1,473 @@
+<div class="space-y-4" id="job-{{ job_id }}">
+    <div class="flex items-center gap-2">
+        <div class="w-2 h-2 rounded-full animate-pulse-slow" id="job-dot-{{ job_id }}"
+             style="background: var(--accent);"></div>
+        <span class="text-sm font-semibold truncate max-w-[70%]" style="color: var(--text-primary);"
+              id="job-title-{{ job_id }}" title="Descargando...">
+            Descargando...
+        </span>
+        <span class="text-xs fenix-muted ml-auto font-normal shrink-0" id="job-time-{{ job_id }}">
+            En progreso
+        </span>
+    </div>
+
+    <div>
+        <div class="flex justify-between text-xs font-medium mb-1 fenix-secondary gap-2">
+            <span id="item-label-{{ job_id }}" class="truncate max-w-[75%]" title="Preparando..."
+                  style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                Preparando...
+            </span>
+            <span id="item-count-{{ job_id }}" class="shrink-0"></span>
+        </div>
+        <div class="w-full h-1.5 rounded-full overflow-hidden" style="background: var(--bg-hover);">
+            <div id="item-bar-{{ job_id }}" class="h-full transition-all duration-500 ease-out"
+                 style="width:0%; background: var(--accent); border-radius: 4px;"></div>
+        </div>
+    </div>
+
+    <div>
+        <div class="flex justify-between text-xs font-medium mb-1 fenix-secondary">
+            <span id="dl-label-{{ job_id }}" class="flex items-center gap-1.5">
+                <svg class="fenix-icon-sm" viewBox="0 0 24 24" stroke="var(--accent)">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                Esperando...
+            </span>
+            <span id="dl-percent-{{ job_id }}">0%</span>
+        </div>
+        <div class="w-full h-1.5 rounded-full overflow-hidden" style="background: var(--bg-hover);">
+            <div id="dl-bar-{{ job_id }}" class="h-full transition-all duration-300 ease-out"
+                 style="width:0%; background: var(--accent);"></div>
+        </div>
+    </div>
+
+    <pre id="log-{{ job_id }}" class="fenix-console-log"
+         style="min-height: 150px; max-height: 250px; background: var(--bg-base);"></pre>
+
+    <div id="failed-wrap-{{ job_id }}" class="hidden"></div>
+
+    <div class="flex items-center justify-between gap-2">
+        <p id="status-{{ job_id }}" class="text-sm font-medium flex items-center gap-2 fenix-secondary">
+            <span class="w-2 h-2 rounded-full animate-pulse-slow" style="background: var(--accent);"></span>
+            <span>En progreso...</span>
+        </p>
+        <button type="button"
+                onclick="(function(){ var el=document.getElementById('job-{{ job_id }}'); if(el) el.remove(); if(window.onJobFinished) window.onJobFinished('{{ job_id }}'); if(window.restoreConsolePlaceholder) window.restoreConsolePlaceholder(); })()"
+                class="text-xs transition-colors duration-200 fenix-muted hover:text-[var(--accent)] font-normal shrink-0">
+            Cerrar
+        </button>
+    </div>
+</div>
+
+<script>
+(function () {
+    const jobId = "{{ job_id }}";
+    const log = document.getElementById("log-" + jobId);
+    const itemLabel = document.getElementById("item-label-" + jobId);
+    const itemCount = document.getElementById("item-count-" + jobId);
+    const itemBar = document.getElementById("item-bar-" + jobId);
+    const dlLabel = document.getElementById("dl-label-" + jobId);
+    const dlBar = document.getElementById("dl-bar-" + jobId);
+    const dlPercent = document.getElementById("dl-percent-" + jobId);
+    const status = document.getElementById("status-" + jobId);
+    const jobTitle = document.getElementById("job-title-" + jobId);
+    const jobTime = document.getElementById("job-time-" + jobId);
+    const jobDot = document.getElementById("job-dot-" + jobId);
+    const failedWrap = document.getElementById("failed-wrap-" + jobId);
+    const emptyMsg = document.getElementById("console-empty-msg");
+
+    let finished = false;
+    let notified = false;
+    let lastResult = null;
+    let isExportJob = false;
+
+    if (typeof window.onJobStarted === "function") {
+        window.onJobStarted(jobId);
+    }
+    if (window.__activeJobTab === "export") {
+        isExportJob = true;
+        setMainStatus("Exportando lista...", "var(--text-primary)");
+        if (emptyMsg) emptyMsg.textContent = "Exportación en progreso...";
+    } else if (window.__activeJobTab === "convert") {
+        if (emptyMsg) emptyMsg.textContent = "Conversión en progreso...";
+    } else {
+        if (emptyMsg) emptyMsg.textContent = "Descarga en progreso...";
+    }
+
+    const content = document.getElementById("console-content");
+    if (content) content.classList.remove("hidden");
+    const toggleBtn = document.getElementById("console-toggle-btn");
+    if (toggleBtn) toggleBtn.textContent = "Ocultar";
+
+    function setMainStatus(text, color) {
+        if (jobTitle) {
+            jobTitle.textContent = text;
+            jobTitle.title = text;
+            jobTitle.style.color = color || "var(--text-primary)";
+        }
+    }
+
+    function setBottomStatus(html) {
+        if (status) status.innerHTML = html;
+    }
+
+    function stopPulse() {
+        if (jobDot) {
+            jobDot.classList.remove("animate-pulse-slow");
+            jobDot.style.background = "var(--text-muted)";
+        }
+    }
+
+    function appendLog(msg) {
+        if (!log || msg == null || String(msg).trim() === "") return;
+        log.textContent += msg + "\n";
+        log.scrollTop = log.scrollHeight;
+    }
+
+    function finishJobUi() {
+        if (typeof window.onJobFinished === "function") {
+            window.onJobFinished(jobId);
+        }
+    }
+
+    function showFailedLinks(failedLinks) {
+        if (!failedWrap || !failedLinks || failedLinks.length === 0) return;
+        const linksText = failedLinks.join("\n");
+        failedWrap.classList.remove("hidden");
+        failedWrap.innerHTML = "";
+
+        const block = document.createElement("div");
+        block.className = "p-3 rounded-xl";
+        block.style.cssText = "background: var(--bg-input); border: 1px solid var(--border-color);";
+
+        const header = document.createElement("div");
+        header.className = "flex items-center justify-between mb-2 gap-2";
+
+        const label = document.createElement("span");
+        label.className = "text-xs font-semibold";
+        label.style.color = "var(--text-secondary)";
+        label.textContent = "Links que fallaron (" + failedLinks.length + ")";
+
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "text-xs font-medium px-2.5 py-1 rounded-lg transition shrink-0";
+        btn.style.cssText =
+            "color: var(--accent); background: var(--tag-bg); border: 1px solid var(--tag-border);";
+        btn.textContent = "Copiar todos";
+
+        const pre = document.createElement("pre");
+        pre.id = "failed-links-box";
+        pre.className = "text-xs";
+        pre.style.cssText = [
+            "min-height: auto",
+            "max-height: 140px",
+            "margin: 0",
+            "overflow-y: auto",
+            "white-space: pre-wrap",
+            "word-break: break-all",
+            "background: var(--bg-base)",
+            "border: 1px solid var(--border-color)",
+            "border-radius: 0.5rem",
+            "padding: 0.6rem 0.75rem",
+            "color: var(--text-secondary)",
+            "font-family: var(--font-mono)",
+            "font-size: 0.78rem",
+            "line-height: 1.5",
+        ].join(";");
+        pre.textContent = linksText;
+        pre.dataset.links = linksText;
+
+        btn.addEventListener("click", function () {
+            const text = pre.dataset.links || pre.textContent;
+            const done = function () {
+                const original = btn.textContent;
+                btn.textContent = "¡Copiado!";
+                setTimeout(function () { btn.textContent = original; }, 1800);
+            };
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(done).catch(function () {
+                    const range = document.createRange();
+                    range.selectNodeContents(pre);
+                    const sel = window.getSelection();
+                    sel.removeAllRanges();
+                    sel.addRange(range);
+                    try { document.execCommand("copy"); } catch (e) {}
+                    sel.removeAllRanges();
+                    done();
+                });
+            } else {
+                const range = document.createRange();
+                range.selectNodeContents(pre);
+                const sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(range);
+                try { document.execCommand("copy"); } catch (e) {}
+                sel.removeAllRanges();
+                done();
+            }
+        });
+
+        header.appendChild(label);
+        header.appendChild(btn);
+        block.appendChild(header);
+        block.appendChild(pre);
+        failedWrap.appendChild(block);
+    }
+
+    function fireToastFromResult(result) {
+        if (notified) return;
+        notified = true;
+        if (typeof window.notifyJobFinished === "function") {
+            window.notifyJobFinished(result || { success: 0, total: 0, failed: 0 });
+        }
+    }
+
+    const source = new EventSource("/stream/" + jobId);
+
+    source.onmessage = function (e) {
+        try {
+            const data = JSON.parse(e.data);
+
+            if (data.type === "log") {
+                appendLog(data.message);
+            }
+
+            if (data.type === "export_result") {
+                isExportJob = true;
+                const links = data.links || [];
+                const fname = data.filename || "playlist.txt";
+                if (links.length > 0) {
+                    if (typeof window.downloadTextFile === "function") {
+                        window.downloadTextFile(fname, links.join("\n") + "\n");
+                    }
+                    appendLog("✅ Archivo " + fname + " (" + links.length + " links)");
+                    setMainStatus("Lista exportada", "var(--accent)");
+                    dlLabel.innerHTML =
+                        '<svg class="fenix-icon-sm" viewBox="0 0 24 24" stroke="var(--accent)"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg> Exportado';
+                    dlBar.style.width = "100%";
+                    dlPercent.textContent = "100%";
+                } else {
+                    appendLog("ℹ️ Sin links para exportar");
+                    setMainStatus("Sin links", "#d79921");
+                }
+            }
+
+            if (data.type === "status") {
+                const statusText = data.message || "";
+                setBottomStatus(
+                    '<span class="w-2 h-2 rounded-full animate-pulse-slow" style="background: var(--accent);"></span> <span>' +
+                    statusText + "</span>"
+                );
+                if (statusText.indexOf("Cancel") !== -1 || statusText.indexOf("⏹") !== -1) {
+                    setMainStatus("Cancelando...", "#d79921");
+                    dlLabel.innerHTML =
+                        '<svg class="fenix-icon-sm" viewBox="0 0 24 24" stroke="#d79921"><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg> Cancelando';
+                } else if (statusText.includes("Lista lista") || statusText.includes("export")) {
+                    setMainStatus("Exportando...", "var(--text-primary)");
+                    dlLabel.innerHTML =
+                        '<svg class="fenix-icon-sm" viewBox="0 0 24 24" stroke="var(--accent)"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg> Exportando';
+                } else if (statusText.includes("Descargando")) {
+                    setMainStatus("Descargando...", "var(--text-primary)");
+                    dlLabel.innerHTML =
+                        '<svg class="fenix-icon-sm" viewBox="0 0 24 24" stroke="var(--accent)"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg> Descargando';
+                } else if (statusText.includes("Convirtiendo")) {
+                    setMainStatus("Convirtiendo...", "var(--text-primary)");
+                    dlLabel.innerHTML =
+                        '<svg class="fenix-icon-sm" viewBox="0 0 24 24" stroke="var(--accent)"><polyline points="23 4 23 10 17 10" /><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" /></svg> Convirtiendo';
+                } else if (statusText.includes("Obteniendo")) {
+                    setMainStatus("Obteniendo info...", "var(--text-primary)");
+                    dlLabel.innerHTML =
+                        '<svg class="fenix-icon-sm" viewBox="0 0 24 24" stroke="var(--accent)"><circle cx="11" cy="11" r="7" /><line x1="16.5" y1="16.5" x2="21" y2="21" /></svg> Obteniendo info';
+                } else if (statusText.includes("Leyendo")) {
+                    setMainStatus(
+                        isExportJob || window.__activeJobTab === "export"
+                            ? "Leyendo playlist..."
+                            : "Leyendo playlist...",
+                        "var(--text-primary)"
+                    );
+                    dlLabel.innerHTML =
+                        '<svg class="fenix-icon-sm" viewBox="0 0 24 24" stroke="var(--accent)"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" /><line x1="9" y1="11" x2="15" y2="11" /><line x1="9" y1="15" x2="15" y2="15" /></svg> Leyendo playlist';
+                } else if (statusText.includes("Buscando")) {
+                    setMainStatus("Buscando...", "var(--text-primary)");
+                    dlLabel.innerHTML =
+                        '<svg class="fenix-icon-sm" viewBox="0 0 24 24" stroke="var(--accent)"><circle cx="11" cy="11" r="7" /><line x1="16.5" y1="16.5" x2="21" y2="21" /></svg> Buscando';
+                } else if (statusText.includes("omitido") || statusText.includes("Ya descargado")) {
+                    setMainStatus("Omitido (ya existe)", "var(--accent)");
+                }
+            }
+
+            if (data.type === "auth_required") {
+                setMainStatus("Error de autenticación", "#cc241d");
+                setBottomStatus(
+                    '<span style="color: #cc241d;">⚠️</span> <span>' +
+                    (data.message || "Auth requerida") + "</span>"
+                );
+                dlLabel.innerHTML =
+                    '<svg class="fenix-icon-sm" viewBox="0 0 24 24" stroke="#cc241d"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg> Error';
+                appendLog("[!] " + (data.message || "Auth requerida"));
+                source.close();
+                finished = true;
+                jobTime.textContent = "Error";
+                stopPulse();
+                if (emptyMsg) emptyMsg.textContent = "Error de autenticación";
+                fireToastFromResult({ success: 0, total: 1, failed: 1 });
+                finishJobUi();
+            }
+
+            if (data.type === "item_progress") {
+                const title = data.title || ("Elemento " + data.current);
+                itemLabel.textContent = title;
+                itemLabel.title = title;
+                itemCount.textContent = data.current + " / " + data.total;
+                const percent = data.total > 0 ? (data.current / data.total) * 100 : 0;
+                itemBar.style.width = percent + "%";
+                if (title && !String(title).startsWith("http")) {
+                    setMainStatus(title, "var(--text-primary)");
+                }
+            }
+
+            if (data.type === "download_progress") {
+                const percent = Math.min(data.percent || 0, 100);
+                dlBar.style.width = percent + "%";
+                let info = percent.toFixed(1) + "%";
+                if (data.eta && data.eta.length > 0) info += " · ETA " + data.eta;
+                if (data.speed && data.speed.length > 0) info += " · " + data.speed;
+                dlPercent.textContent = info;
+            }
+
+            if (data.type === "job_result") {
+                lastResult = data;
+            }
+
+            if (data.type === "done") {
+                source.close();
+                finished = true;
+                stopPulse();
+
+                const success = lastResult ? lastResult.success : -1;
+                const total = lastResult ? lastResult.total : 0;
+                const failed = lastResult ? lastResult.failed : 0;
+                const cancelled = lastResult && lastResult.cancelled;
+                const failedLinks =
+                    lastResult && lastResult.failed_links ? lastResult.failed_links : [];
+                const exportMode = isExportJob || window.__activeJobTab === "export";
+
+                if (cancelled) {
+                    setMainStatus(
+                        exportMode ? "Exportación cancelada" : "Descarga cancelada",
+                        "#d79921"
+                    );
+                    setBottomStatus(
+                        '<span style="color: #d79921;">⏹</span> <span>' +
+                        (exportMode ? "Exportación cancelada" : "Descarga cancelada") +
+                        (success > 0 ? " (" + success + " completados)" : "") +
+                        "</span>"
+                    );
+                    dlLabel.innerHTML =
+                        '<svg class="fenix-icon-sm" viewBox="0 0 24 24" stroke="#d79921"><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg> Cancelado';
+                    jobTime.textContent = "Cancelado";
+                    if (emptyMsg) {
+                        emptyMsg.textContent = exportMode
+                            ? "Exportación cancelada"
+                            : "Descarga cancelada";
+                    }
+                    itemBar.style.background = "#d79921";
+                } else if (success === 0 && total >= 0) {
+                    setMainStatus(
+                        exportMode ? "No se exportó nada" : "No se descargó nada",
+                        "#cc241d"
+                    );
+                    setBottomStatus(
+                        '<span style="color: #cc241d;">❌</span> <span>' +
+                        (exportMode
+                            ? "No se encontraron links en la playlist"
+                            : "No se pudo descargar ningún archivo") +
+                        "</span>"
+                    );
+                    dlLabel.innerHTML =
+                        '<svg class="fenix-icon-sm" viewBox="0 0 24 24" stroke="#cc241d"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg> Error';
+                    jobTime.textContent = "Error";
+                    if (emptyMsg) {
+                        emptyMsg.textContent = exportMode
+                            ? "Exportación fallida"
+                            : "Descarga fallida";
+                    }
+                    itemBar.style.background = "#cc241d";
+                } else if (success > 0 && failed > 0) {
+                    setMainStatus(
+                        "Completado con errores (" + success + "/" + total + ")",
+                        "var(--accent)"
+                    );
+                    setBottomStatus(
+                        '<span style="color: var(--accent);">⚠️</span> <span>Completado con errores: ' +
+                        success + " ok, " + failed + " fallaron</span>"
+                    );
+                    dlLabel.innerHTML =
+                        '<svg class="fenix-icon-sm" viewBox="0 0 24 24" stroke="var(--accent)"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg> Parcial';
+                    dlBar.style.width = "100%";
+                    dlPercent.textContent = "100%";
+                    jobTime.textContent = "Parcial";
+                    if (emptyMsg) emptyMsg.textContent = "Completado con errores";
+                } else {
+                    if (exportMode) {
+                        setMainStatus("¡Lista exportada!", "var(--accent)");
+                        setBottomStatus(
+                            '<span style="color: var(--accent);">✅</span> <span>¡Lista exportada!</span>'
+                        );
+                        dlLabel.innerHTML =
+                            '<svg class="fenix-icon-sm" viewBox="0 0 24 24" stroke="var(--accent)"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg> Exportado';
+                        if (emptyMsg) emptyMsg.textContent = "Lista exportada";
+                    } else {
+                        setMainStatus("¡Descarga completada!", "var(--accent)");
+                        setBottomStatus(
+                            '<span style="color: var(--accent);">✅</span> <span>¡Descarga completada!</span>'
+                        );
+                        dlLabel.innerHTML =
+                            '<svg class="fenix-icon-sm" viewBox="0 0 24 24" stroke="var(--accent)"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg> Completado';
+                        if (emptyMsg) emptyMsg.textContent = "Descarga completada";
+                    }
+                    dlBar.style.width = "100%";
+                    dlPercent.textContent = "100%";
+                    jobTime.textContent = "Finalizado";
+                }
+
+                showFailedLinks(failedLinks);
+
+                if (lastResult) {
+                    fireToastFromResult(lastResult);
+                } else {
+                    fireToastFromResult({
+                        success: success >= 0 ? success : 1,
+                        total: total > 0 ? total : 1,
+                        failed: failed >= 0 ? failed : 0,
+                        cancelled: !!cancelled,
+                    });
+                }
+
+                finishJobUi();
+            }
+        } catch (err) {
+            console.error("Error procesando mensaje:", err);
+        }
+    };
+
+    source.onerror = function () {
+        if (!finished) {
+            setMainStatus("Error de conexión", "#cc241d");
+            setBottomStatus(
+                '<span style="color: #cc241d;">❌</span> <span>Error en la conexión</span>'
+            );
+            dlLabel.innerHTML =
+                '<svg class="fenix-icon-sm" viewBox="0 0 24 24" stroke="#cc241d"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg> Error';
+            jobTime.textContent = "Error";
+            stopPulse();
+            if (emptyMsg) emptyMsg.textContent = "Error de conexión";
+            fireToastFromResult({ success: 0, total: 1, failed: 1 });
+            finishJobUi();
+        }
+        source.close();
+    };
+})();
+</script>

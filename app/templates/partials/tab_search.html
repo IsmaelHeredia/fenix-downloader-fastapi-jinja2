@@ -1,0 +1,84 @@
+<div id="panel-search" class="fenix-tab-panel hidden space-y-5">
+  <div>
+    <label class="fenix-label">
+      <svg class="fenix-icon-sm" viewBox="0 0 24 24" style="color: var(--accent);">
+        <circle cx="11" cy="11" r="7" />
+        <line x1="16.5" y1="16.5" x2="21" y2="21" />
+      </svg>
+      Nombres de canciones
+    </label>
+    <textarea id="links-textarea-search" class="fenix-textarea mt-1.5" data-role="links-source"
+      placeholder="Un nombre de canción por línea.&#10;Ejemplo:&#10;The Bells – Jeff Mills&#10;Imagine Dragons - Believer"></textarea>
+    <p class="text-xs mt-1.5 fenix-muted">Se busca en YouTube y se descarga la mejor coincidencia</p>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div>
+      <label class="fenix-label">
+        <svg class="fenix-icon-sm" viewBox="0 0 24 24" style="color: var(--accent);">
+          <path d="M12 20h9" />
+          <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+        </svg>
+        Nombre (opcional)
+      </label>
+      <input type="text" name="output_name" class="fenix-input mt-1.5" placeholder="Mi descarga" autocomplete="off">
+    </div>
+    <div>
+      <label class="fenix-label">
+        <svg class="fenix-icon-sm" viewBox="0 0 24 24" style="color: var(--accent);">
+          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+        </svg>
+        Directorio (opcional)
+      </label>
+      <input type="text" name="output_folder" class="fenix-input mt-1.5" placeholder="carpeta/subcarpeta"
+        autocomplete="off">
+    </div>
+  </div>
+
+  <div>
+    <label class="fenix-label mb-1.5">
+      <svg class="fenix-icon-sm" viewBox="0 0 24 24" style="color: var(--accent);">
+        <rect x="2" y="4" width="20" height="16" rx="2" ry="2" />
+        <polyline points="10 9 15 12 10 15" />
+      </svg>
+      Calidad de video
+    </label>
+    <select name="quality" class="fenix-input">
+      <option value="max">Máxima calidad (evitar AV1 / hasta 4K)</option>
+      <option value="1080" selected>1080p (Full HD) — Recomendado</option>
+      <option value="720">720p (HD)</option>
+    </select>
+    <p class="text-xs mt-1.5 fenix-muted">Afecta el archivo temporal antes de convertir a MP3.</p>
+  </div>
+
+  <div class="space-y-2.5">
+    <label class="flex items-start gap-2.5 cursor-pointer select-none">
+      <input type="checkbox" name="prefer_spanish_audio" value="1" class="fenix-checkbox">
+      <span class="text-sm" style="color: var(--text-secondary);">
+        <span class="font-medium" style="color: var(--text-primary);">Preferir doblaje automático en español</span>
+        <br><span class="text-xs fenix-muted">Solo si está disponible en cada video.</span>
+      </span>
+    </label>
+    <label class="flex items-start gap-2.5 cursor-pointer select-none">
+      <input type="checkbox" name="spanish_subs" value="1" class="fenix-checkbox">
+      <span class="text-sm" style="color: var(--text-secondary);">
+        <span class="font-medium" style="color: var(--text-primary);">Incluir subtítulos en español</span>
+        <br><span class="text-xs fenix-muted">Oficiales o automáticos, solo si existen.</span>
+      </span>
+    </label>
+    <label class="flex items-start gap-2.5 cursor-pointer select-none">
+      <input type="checkbox" name="use_cookies" value="1" class="fenix-checkbox">
+      <span class="text-sm" style="color: var(--text-secondary);">
+        <span class="font-medium" style="color: var(--text-primary);">Usar cookies de YouTube</span>
+        <br>
+        <span class="text-xs fenix-muted">
+          Opcional. Para edad / rate limit. Requiere
+          <code class="text-xs">data/cookies.txt</code>.
+          Si no hay archivo, se continúa sin cookies.
+        </span>
+      </span>
+    </label>
+  </div>
+
+  <input type="hidden" name="tipo" id="tipo-search" value="search">
+</div>
